@@ -2,12 +2,12 @@ package com.gestion_eventos.controller;
 
 
 
-
-
 import com.gestion_eventos.model.Evento;
 import com.gestion_eventos.service.GestionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,9 +36,10 @@ public class GestionController  {
     }
     
     @PostMapping
-    public Evento createEvento(@RequestBody Evento evento) {
-        return gestionService.createEvento(evento);
-    }
+public ResponseEntity<Evento> createEvento(@RequestBody Evento evento) {
+    Evento creado = gestionService.createEvento(evento);
+    return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+ }
 
     @PutMapping("/{id}")
     public Evento updateEvento(@PathVariable Long id, @RequestBody Evento evento) {
@@ -47,8 +48,9 @@ public class GestionController  {
 
     
     @DeleteMapping("/{id}")
-    public void deleteEvento(@PathVariable Long id){
-        gestionService.deleteEvento(id);
-    }
-
+    public ResponseEntity<Void> deleteEvento(@PathVariable Long id) {
+    gestionService.deleteEvento(id);
+    return ResponseEntity.noContent().build();  
 }
+
+} 
