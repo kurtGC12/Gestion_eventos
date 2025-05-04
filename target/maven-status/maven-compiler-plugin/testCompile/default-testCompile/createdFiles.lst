@@ -1,0 +1,5 @@
+com\gestion_eventos\model\EventoTest.class
+com\gestion_eventos\repository\GestionRepositoryTest.class
+com\gestion_eventos\GestionEventosApplicationTests.class
+com\gestion_eventos\controller\GestionControllerTest.class
+com\gestion_eventos\service\GestionServiceTest.class

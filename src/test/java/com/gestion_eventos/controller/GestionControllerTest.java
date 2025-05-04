@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-@WebMvcTest(GestionController.class)  // Prueba de un controlador específico
+@WebMvcTest(GestionController.class)
 public class GestionControllerTest {
 
     @Autowired
@@ -35,7 +35,7 @@ public class GestionControllerTest {
     private GestionService gestionServiceMock;
 
     @InjectMocks
-    private GestionController gestionController;  // Inyectar el controlador con el servicio
+    private GestionController gestionController;
 
     @Test
     public void obtenerTodosLosEventosTest() throws Exception {
@@ -57,8 +57,11 @@ public class GestionControllerTest {
 
         mockMvc.perform(get("/eventos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nombre").value("Exposición Canina Mundial de Italia 2026"))
-                .andExpect(jsonPath("$[1].nombre").value("Exposición Canina del Westminster Kennel Club"));
+                .andExpect(jsonPath("$._embedded.eventoList[0].nombre").value("Exposición Canina Mundial de Italia 2026"))
+                .andExpect(jsonPath("$._embedded.eventoList[1].nombre").value("Exposición Canina del Westminster Kennel Club"))
+                .andExpect(jsonPath("$._embedded.eventoList[0]._links.self.href").exists())
+                .andExpect(jsonPath("$._embedded.eventoList[1]._links.self.href").exists())
+                .andExpect(jsonPath("$._links.self.href").exists());
     }
 
     @Test
@@ -75,12 +78,15 @@ public class GestionControllerTest {
         mockMvc.perform(get("/eventos/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombre").value("Exposición Canina Mundial de Italia 2026"))
-                .andExpect(jsonPath("$.ubicacion").value("Italian Kennel Club"));
+                .andExpect(jsonPath("$.ubicacion").value("Italian Kennel Club"))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$._links.todos-los-eventos.href").exists());
     }
 
     @Test
     public void crearEventoTest() throws Exception {
         Evento evento = new Evento();
+        evento.setId(1L);
         evento.setNombre("Exposición Canina Mundial de Italia 2026");
         evento.setUbicacion("Italian Kennel Club");
         evento.setDescripcion("Uno de los eventos caninos más prestigiosos a nivel mundial.");
@@ -89,11 +95,13 @@ public class GestionControllerTest {
         when(gestionServiceMock.createEvento(any(Evento.class))).thenReturn(evento);
 
         mockMvc.perform(post("/eventos")
-                .contentType("application/json")
-                .content("{\"nombre\": \"Exposición Canina Mundial de Italia 2026\", \"ubicacion\": \"Italian Kennel Club\", \"descripcion\": \"Uno de los eventos caninos más prestigiosos a nivel mundial.\", \"fecha\": \"2026-06-04\"}"))
+                        .contentType("application/json")
+                        .content("{\"nombre\": \"Exposición Canina Mundial de Italia 2026\", \"ubicacion\": \"Italian Kennel Club\", \"descripcion\": \"Uno de los eventos caninos más prestigiosos a nivel mundial.\", \"fecha\": \"2026-06-04\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nombre").value("Exposición Canina Mundial de Italia 2026"))
-                .andExpect(jsonPath("$.descripcion").value("Uno de los eventos caninos más prestigiosos a nivel mundial."));
+                .andExpect(jsonPath("$.descripcion").value("Uno de los eventos caninos más prestigiosos a nivel mundial."))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$._links.todos-los-eventos.href").exists());
     }
 
     @Test
@@ -108,16 +116,18 @@ public class GestionControllerTest {
         when(gestionServiceMock.updateEvento(eq(1L), any(Evento.class))).thenReturn(evento);
 
         mockMvc.perform(put("/eventos/1")
-                .contentType("application/json")
-                .content("{\"nombre\": \"Exposición Canina Mundial de Italia 2026\", \"ubicacion\": \"Italian Kennel Club\", \"descripcion\": \"Uno de los eventos caninos más prestigiosos a nivel mundial.\", \"fecha\": \"2026-06-04\"}"))
+                        .contentType("application/json")
+                        .content("{\"nombre\": \"Exposición Canina Mundial de Italia 2026\", \"ubicacion\": \"Italian Kennel Club\", \"descripcion\": \"Uno de los eventos caninos más prestigiosos a nivel mundial.\", \"fecha\": \"2026-06-04\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombre").value("Exposición Canina Mundial de Italia 2026"))
-                .andExpect(jsonPath("$.descripcion").value("Uno de los eventos caninos más prestigiosos a nivel mundial."));
+                .andExpect(jsonPath("$.descripcion").value("Uno de los eventos caninos más prestigiosos a nivel mundial."))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$._links.todos-los-eventos.href").exists());
     }
 
     @Test
     public void eliminarEventoTest() throws Exception {
         mockMvc.perform(delete("/eventos/1"))
-                .andExpect(status().isNoContent());  
+                .andExpect(status().isNoContent());
     }
 }
